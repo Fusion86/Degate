@@ -40,7 +40,13 @@ namespace degate
     MainWindow::MainWindow(int width, int height) : status_bar(this), tools_group(this), updater(this)
     {
         if (width == 0 || height == 0)
-            resize(QGuiApplication::screenAt(this->pos())->availableGeometry().size() * 0.7);
+        {
+            QScreen* screen = QGuiApplication::screenAt(this->pos());
+            if (screen != nullptr)
+                resize(screen->availableGeometry().size() * 0.7);
+            else
+                resize(800, 600);
+        }
         else
             resize(width, height);
 
@@ -68,7 +74,7 @@ namespace degate
         QObject::connect(project_import_action, SIGNAL(triggered()), this, SLOT(on_menu_project_importer()));
 
         project_export_action = project_menu->addAction("");
-        project_export_action->setShortcut(Qt::CTRL + Qt::Key_S);
+        project_export_action->setShortcut(Qt::CTRL | Qt::Key_S);
         QObject::connect(project_export_action, SIGNAL(triggered()), this, SLOT(on_menu_project_save()));
 
         project_recent_projects_submenu = project_menu->addMenu("");
@@ -259,11 +265,11 @@ namespace degate
         QObject::connect(remove_objects_action, SIGNAL(triggered()), this, SLOT(on_menu_logic_remove_selected_objects()));
 
         interconnect_objects_action = logic_menu->addAction("");
-        interconnect_objects_action->setShortcut(Qt::CTRL + Qt::Key_C);
+        interconnect_objects_action->setShortcut(Qt::CTRL | Qt::Key_C);
         QObject::connect(interconnect_objects_action, SIGNAL(triggered()), this, SLOT(on_menu_logic_interconnect_selected_objects()));
 
         isolate_objects_action = logic_menu->addAction("");
-        isolate_objects_action->setShortcut(Qt::CTRL + Qt::Key_X);
+        isolate_objects_action->setShortcut(Qt::CTRL | Qt::Key_X);
         QObject::connect(isolate_objects_action, SIGNAL(triggered()), this, SLOT(on_menu_logic_isolate_selected_objects()));
 
         move_selected_gates_into_module = logic_menu->addAction("");
@@ -1329,14 +1335,11 @@ namespace degate
 
                 "</table></center></html>";
 
-        QMessageBox help(tr("Degate help"),
+        QMessageBox help(QMessageBox::Icon::NoIcon,
+                         tr("Degate help"),
                          help_message,
-                         QMessageBox::Icon::NoIcon,
-                         QMessageBox::Button::Ok,
-                         QMessageBox::Button::NoButton,
-                         QMessageBox::Button::NoButton,
-                         this
-                        );
+                         QMessageBox::StandardButton::Ok,
+                         this);
 
         auto* about_layout = help.findChild<QGridLayout*>();
         QMargins about_margins = about_layout->contentsMargins();
